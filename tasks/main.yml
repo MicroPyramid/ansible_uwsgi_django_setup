@@ -1,0 +1,29 @@
+---
+# tasks file for nginx_django_setup
+- name: Check if Package is installed
+  command: dpkg-query -l supervisor
+  register: is_installed
+  failed_when: is_installed.rc > 1
+  changed_when: no
+
+- name: Install supervisor
+  apt: name=supervisor state=present force=yes
+  when: is_installed.rc != 0
+
+- name: Create UWSGI vassals directory
+  file: "path={{vassals_dir}}  state=directory"
+
+- name: setup uwsgi in supervisor
+  template: "src=uwsgi-server.j2 dest={{supervisor_conf_dir}}/uwsgi-runner.conf"
+
+- name: update supervisor
+  supervisorctl: name=uwsgi-runner state=restarted
+
+- name: setup project uwsgi configuration file
+  template: "src=uwsgi.j2 dest=/home/{{project_name}}/{{project_name}}_uwsgi.ini"
+
+- name: create a symlink of uwsgi in vassals
+  file: "src=/home/{{project_name}}/{{project_name}}_uwsgi.ini dest=/etc/uwsgi/vassals/{{project_name}}_uwsgi.ini state=link"
+
+- name: touch the symlink file
+  command: "touch /etc/uwsgi/vassals/{{project_name}}_uwsgi.ini"
