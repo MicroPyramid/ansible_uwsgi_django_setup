@@ -10,10 +10,14 @@ galaxy_info:
   - name: Ubuntu
     versions:
     - trusty
+    - vivid
+    - precise
   
   categories:
   - system
   - web
+  - uwsgi
+  - django
 
 dependencies:
   - { role: micropyramid.uwsgi }
